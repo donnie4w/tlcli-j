@@ -18,11 +18,11 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 
-public class TestClient {
+public class TlcliClientDemo {
     public static Logger logger = Logger.getLogger("TestClient");
     Client client;
 
-    public TestClient() {
+    public TlcliClientDemo() {
         client = new Client();
         client.newConnect(true, "192.168.2.108", 7001, "mycli=123");
     }
