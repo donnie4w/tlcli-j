@@ -5,7 +5,7 @@
  * https://githuc.com/donnie4w/tlcli-j
  */
 
-package com.github.donnie4w.tldb.tlcli;
+package io.github.donnie4w.tldb.tlcli;
 
 import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
