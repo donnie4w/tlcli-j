@@ -6,8 +6,6 @@
  */
 
 package io.github.donnie4w.tldb.tlcli;
-
-import org.apache.thrift.TException;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -28,14 +26,14 @@ public class TlcliClientDemo {
     }
 
     @Test
-    public void TestCreateTable() throws TException {
+    public void TestCreateTable() throws TlException {
         Ack ack = client.createTable("school", new String[]{"classroom", "teacher", "student"}, new String[]{"classroom", "teacher"});
         logger.info(ack.toString());
     }
 
 
     @Test
-    public void TestUpdate() throws TException {
+    public void TestUpdate() throws TlException {
         Map<String, byte[]> colmap = new HashMap<>();
         colmap.put("classroom", ("class java").getBytes(StandardCharsets.UTF_8));
         colmap.put("teacher", ("teacher java").getBytes(StandardCharsets.UTF_8));
@@ -46,19 +44,19 @@ public class TlcliClientDemo {
     }
 
     @Test
-    public void TestDelete() throws TException {
+    public void TestDelete() throws TlException {
         AckBean ack = client.delete("school", 5);
         logger.info("ack >> " + ack.toString());
     }
 
     @Test
-    public void TestAlter() throws TException {
+    public void TestAlter() throws TlException {
         Ack ack = client.alterTable("school", new String[]{"classroom", "teacher", "student", "level"}, new String[]{"classroom", "teacher"});
         logger.info(ack.toString());
     }
 
     @Test
-    public void TestSelectById() throws TException {
+    public void TestSelectById() throws TlException {
         DataBean db = client.selectById("school", 1);
         System.out.println("id >> " + db.getId());
         for (String k : db.getTBean().keySet()) {
@@ -68,7 +66,7 @@ public class TlcliClientDemo {
 
 
     @Test
-    public void TestSelectByIdx() throws TException {
+    public void TestSelectByIdx() throws TlException {
         DataBean db = client.selectByIdx("school", "teacher", "teacher0".getBytes(StandardCharsets.UTF_8));
         System.out.println("id >> " + db.getId());
         for (String k : db.getTBean().keySet()) {
@@ -78,8 +76,8 @@ public class TlcliClientDemo {
 
 
     @Test
-    public void TestSelectsByIdLimit() throws TException {
-        List<DataBean> dblist = client.SelectsByIdLimit("school", 0, 20);
+    public void TestSelectsByIdLimit() throws TlException {
+        List<DataBean> dblist = client.selectsByIdLimit("school", 0, 20);
         if (dblist != null) {
             for (DataBean _db : dblist) {
                 StringBuffer sb = new StringBuffer();
@@ -93,7 +91,7 @@ public class TlcliClientDemo {
     }
 
     @Test
-    public void TestSelectByIdxLimit() throws TException {
+    public void TestSelectByIdxLimit() throws TlException {
         List<byte[]> list = new ArrayList<>();
         list.add("teacher0".getBytes(StandardCharsets.UTF_8));
         list.add("teacher1".getBytes(StandardCharsets.UTF_8));
@@ -112,7 +110,7 @@ public class TlcliClientDemo {
     }
 
     @Test
-    public void TestSelectAllByIdx() throws TException {
+    public void TestSelectAllByIdx() throws TlException {
         List<DataBean> dblist = client.selectAllByIdx("school", "teacher", "teacher0".getBytes(StandardCharsets.UTF_8));
         if (dblist != null) {
             for (DataBean _db : dblist) {
@@ -127,7 +125,7 @@ public class TlcliClientDemo {
     }
 
     @Test
-    public void TestShowAllTables() throws TException {
+    public void TestShowAllTables() throws TlException {
         List<TableBean> list = client.showAllTables();
         for (TableBean tb : list) {
             System.out.println(tb.name + " ");
