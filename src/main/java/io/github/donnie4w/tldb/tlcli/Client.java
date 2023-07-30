@@ -14,6 +14,8 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
+import org.apache.thrift.TException;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
@@ -104,7 +106,7 @@ public class Client {
         return this.conn.Auth(s);
     }
 
-    public synchronized Ack createTable(String tableName, String[] columnsName, String[] indexs) throws TException {
+    public synchronized Ack createTable(String tableName, String[] columnsName, String[] indexs) throws TlException {
         TableBean tb = new TableBean();
         tb.setName(tableName);
         tb.columns = new HashMap();
@@ -117,10 +119,14 @@ public class Client {
                 tb.Idx.put(i, Byte.valueOf((byte) 0));
             }
         }
-        return this.conn.Create(tb);
+        try {
+            return this.conn.Create(tb);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized Ack alterTable(String tableName, String[] columnsName, String[] indexs) throws TException {
+    public synchronized Ack alterTable(String tableName, String[] columnsName, String[] indexs) throws TlException {
         TableBean tb = new TableBean();
         tb.setName(tableName);
         tb.columns = new HashMap<>();
@@ -133,42 +139,74 @@ public class Client {
                 tb.Idx.put(i, Byte.valueOf((byte) 0));
             }
         }
-        return this.conn.Alter(tb);
+        try {
+            return this.conn.Alter(tb);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized Ack drop(String name) throws TException {
-        return this.conn.Drop(name);
+    public synchronized Ack drop(String name) throws TlException {
+        try {
+            return this.conn.Drop(name);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized long selectId(String name) throws TException {
-        return this.conn.SelectId(name);
+    public synchronized long selectId(String name) throws TlException {
+        try {
+            return this.conn.SelectId(name);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized DataBean selectById(String name, long id) throws TException {
-        return this.conn.SelectById(name, id);
+    public synchronized DataBean selectById(String name, long id) throws TlException {
+        try {
+            return this.conn.SelectById(name, id);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized List<DataBean> SelectsByIdLimit(String name, long startId, long limit) throws TException {
-        return this.conn.SelectsByIdLimit(name, startId, limit);
+    public synchronized List<DataBean> selectsByIdLimit(String name, long startId, long limit) throws TlException {
+        try {
+            return this.conn.SelectsByIdLimit(name, startId, limit);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized DataBean selectByIdx(String name, String column, byte[] value) throws TException {
-        return this.conn.SelectByIdx(name, column, ByteBuffer.wrap(value));
+    public synchronized DataBean selectByIdx(String name, String column, byte[] value) throws TlException {
+        try {
+            return this.conn.SelectByIdx(name, column, ByteBuffer.wrap(value));
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized List<DataBean> selectAllByIdx(String name, String column, byte[] value) throws TException {
-        return this.conn.SelectAllByIdx(name, column, ByteBuffer.wrap(value));
+    public synchronized List<DataBean> selectAllByIdx(String name, String column, byte[] value) throws TlException {
+        try {
+            return this.conn.SelectAllByIdx(name, column, ByteBuffer.wrap(value));
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized List<DataBean> selectByIdxLimit(String name, String column, List<byte[]> value, long startId, long limit) throws TException {
+    public synchronized List<DataBean> selectByIdxLimit(String name, String column, List<byte[]> value, long startId, long limit) throws TlException {
         List<ByteBuffer> listValue = new ArrayList<>();
         for (byte[] v : value) {
             listValue.add(ByteBuffer.wrap(v));
         }
-        return this.conn.SelectByIdxLimit(name, column, listValue, startId, limit);
+        try {
+            return this.conn.SelectByIdxLimit(name, column, listValue, startId, limit);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized AckBean update(String tableName, long id, Map<String, byte[]> columnsMap) throws TException {
+    public synchronized AckBean update(String tableName, long id, Map<String, byte[]> columnsMap) throws TlException {
         TableBean tb = new TableBean();
         tb.setName(tableName);
         tb.setId(id);
@@ -178,17 +216,25 @@ public class Client {
                 tb.columns.put(key, ByteBuffer.wrap(columnsMap.get(key)));
             }
         }
-        return this.conn.Update(tb);
+        try {
+            return this.conn.Update(tb);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized AckBean delete(String tableName, long id) throws TException {
+    public synchronized AckBean delete(String tableName, long id) throws TlException {
         TableBean tb = new TableBean(tableName);
         tb.setName(tableName);
         tb.setId(id);
-        return this.conn.Delete(tb);
+        try {
+            return this.conn.Delete(tb);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized AckBean insert(String tableName, Map<String, byte[]> columnsMap) throws TException {
+    public synchronized AckBean insert(String tableName, Map<String, byte[]> columnsMap) throws TlException {
         TableBean tb = new TableBean(tableName);
         if (columnsMap != null) {
             tb.columns = new HashMap<>();
@@ -196,15 +242,27 @@ public class Client {
                 tb.columns.put(key, ByteBuffer.wrap(columnsMap.get(key)));
             }
         }
-        return this.conn.Insert(tb);
+        try {
+            return this.conn.Insert(tb);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized TableBean showTable(String name) throws TException {
-        return this.conn.ShowTable(name);
+    public synchronized TableBean showTable(String name) throws TlException {
+        try {
+            return this.conn.ShowTable(name);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
-    public synchronized List<TableBean> showAllTables() throws TException {
-        return this.conn.ShowAllTables();
+    public synchronized List<TableBean> showAllTables() throws TlException {
+        try {
+            return this.conn.ShowAllTables();
+        } catch (TException e) {
+            throw new TlException(e);
+        }
     }
 
     public synchronized void close() {
