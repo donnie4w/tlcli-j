@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2023 tldb Author. All Rights Reserved.
  * email: donnie4w@gmail.com
  * https://githuc.com/donnie4w/tldb
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 
 public class Client {
 
-    public static Logger logger = Logger.getLogger("tlcli");
+    public static Logger logger = Logger.getLogger("Client");
     private TTransport transport;
     private Icli.Client conn;
     private String host;
@@ -157,6 +157,14 @@ public class Client {
     public synchronized long selectId(String name) throws TlException {
         try {
             return this.conn.SelectId(name);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
+    }
+
+    public synchronized long selectIdByIdx(String name, String column, byte[] value) throws TlException {
+        try {
+            return this.conn.SelectIdByIdx(name,column,ByteBuffer.wrap(value));
         } catch (TException e) {
             throw new TlException(e);
         }
