@@ -13,14 +13,12 @@ import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-
-import org.apache.thrift.TException;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -32,7 +30,7 @@ import java.util.logging.Logger;
 
 public class Client {
 
-    public static Logger logger = Logger.getLogger("Client");
+    public final static Logger logger = Logger.getLogger("Client");
     private TTransport transport;
     private Icli.Client conn;
     private String host;
@@ -76,7 +74,7 @@ public class Client {
                         return null;
                     }
                 };
-                SSLContext ctx = SSLContext.getInstance("SSL");
+                SSLContext ctx = SSLContext.getInstance("TLSv1.2");
                 ctx.init(null, new TrustManager[]{xtm}, null);
                 SSLSocket socket = (SSLSocket) ctx.getSocketFactory().createSocket(host, port);
                 TSocket ts = new TSocket(socket);
@@ -106,12 +104,12 @@ public class Client {
         return this.conn.Auth(s);
     }
 
-    public synchronized Ack createTable(String tableName, String[] columnsName, String[] indexs) throws TlException {
+    public synchronized Ack createTable(String tableName, Map<String,ColumnType> columnsName, String[] indexs) throws TlException {
         TableBean tb = new TableBean();
         tb.setName(tableName);
         tb.columns = new HashMap();
-        for (String c : columnsName) {
-            tb.columns.put(c, ByteBuffer.allocate(0));
+        for(Map.Entry<String,ColumnType> me:columnsName.entrySet()){
+            tb.columns.put(me.getKey(), ByteBuffer.wrap(me.getValue().getValue().getBytes(StandardCharsets.UTF_8)));
         }
         if (indexs != null) {
             tb.Idx = new HashMap();
@@ -126,12 +124,12 @@ public class Client {
         }
     }
 
-    public synchronized Ack alterTable(String tableName, String[] columnsName, String[] indexs) throws TlException {
+    public synchronized Ack alterTable(String tableName,  Map<String,ColumnType> columnsName, String[] indexs) throws TlException {
         TableBean tb = new TableBean();
         tb.setName(tableName);
         tb.columns = new HashMap<>();
-        for (String c : columnsName) {
-            tb.columns.put(c, ByteBuffer.allocate(0));
+        for(Map.Entry<String,ColumnType> me:columnsName.entrySet()){
+            tb.columns.put(me.getKey(), ByteBuffer.wrap(me.getValue().getValue().getBytes(StandardCharsets.UTF_8)));
         }
         if (indexs != null) {
             tb.Idx = new HashMap<>();
@@ -220,8 +218,8 @@ public class Client {
         tb.setId(id);
         if (columnsMap != null) {
             tb.columns = new HashMap();
-            for (String key : columnsMap.keySet()) {
-                tb.columns.put(key, ByteBuffer.wrap(columnsMap.get(key)));
+            for(Map.Entry<String, byte[]> me:columnsMap.entrySet()){
+                tb.columns.put(me.getKey(), ByteBuffer.wrap(me.getValue()));
             }
         }
         try {
@@ -246,8 +244,8 @@ public class Client {
         TableBean tb = new TableBean(tableName);
         if (columnsMap != null) {
             tb.columns = new HashMap<>();
-            for (String key : columnsMap.keySet()) {
-                tb.columns.put(key, ByteBuffer.wrap(columnsMap.get(key)));
+            for(Map.Entry<String, byte[]> me:columnsMap.entrySet()){
+                tb.columns.put(me.getKey(), ByteBuffer.wrap(me.getValue()));
             }
         }
         try {

@@ -6,8 +6,11 @@
  */
 
 package io.github.donnie4w.tldb.tlcli;
+
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,24 +25,28 @@ public class TlcliClientDemo {
 
     public TlcliClientDemo() {
         client = new Client();
-        client.newConnect(true, "192.168.2.108", 7001, "mycli=123");
+        client.newConnect(true, "127.0.0.1", 7100, "mycli=123");
     }
 
     @Test
     public void TestCreateTable() throws TlException {
-        Ack ack = client.createTable("school", new String[]{"classroom", "teacher", "student"}, new String[]{"classroom", "teacher"});
+        Map<String, ColumnType> cmap = new HashMap<>();
+        cmap.put("classroom", ColumnType.STRING);
+        cmap.put("teacher", ColumnType.BINARY);
+        cmap.put("level", ColumnType.INT16);
+        cmap.put("number", ColumnType.INT64);
+        client.createTable("school", cmap, new String[]{"classroom", "level"});
+        Ack ack = client.createTable("school", cmap, new String[]{"classroom", "teacher"});
         logger.info(ack.toString());
     }
 
-
     @Test
     public void TestUpdate() throws TlException {
-        Map<String, byte[]> colmap = new HashMap<>();
-        colmap.put("classroom", ("class java").getBytes(StandardCharsets.UTF_8));
-        colmap.put("teacher", ("teacher java").getBytes(StandardCharsets.UTF_8));
-        colmap.put("student", ("student java").getBytes(StandardCharsets.UTF_8));
-        colmap.put("level", ("level java").getBytes(StandardCharsets.UTF_8));
-        AckBean ack = client.update("school", 5, colmap);
+        Map<String, byte[]> m = new HashMap<>();
+        m.put("classroom", ("class111").getBytes(StandardCharsets.UTF_8));
+        m.put("teacher", ("teacher111").getBytes(StandardCharsets.UTF_8));
+        m.put("level", ByteBuffer.allocate(Short.BYTES).order(ByteOrder.BIG_ENDIAN).putShort((short) (1 << 5)).array());
+        AckBean ack = client.update("school", 2, m);
         logger.info("ack >> " + ack.toString());
     }
 
@@ -51,7 +58,13 @@ public class TlcliClientDemo {
 
     @Test
     public void TestAlter() throws TlException {
-        Ack ack = client.alterTable("school", new String[]{"classroom", "teacher", "student", "level"}, new String[]{"classroom", "teacher"});
+        Map<String, ColumnType> cmap = new HashMap<>();
+        cmap.put("classroom", ColumnType.STRING);
+        cmap.put("teacher", ColumnType.BINARY);
+        cmap.put("student", ColumnType.BINARY);
+        cmap.put("level", ColumnType.INT16);
+        cmap.put("number", ColumnType.INT64);
+        Ack ack = client.alterTable("school", cmap, new String[]{"classroom", "teacher"});
         logger.info(ack.toString());
     }
 
@@ -136,20 +149,33 @@ public class TlcliClientDemo {
 
     public static void main(String[] args) throws Exception {
         Client client = new Client();
-        client.newConnect(true, "192.168.2.108", 7100, "mycli=123");
-        client.createTable("school", new String[]{"classroom", "teacher", "student"}, new String[]{"classroom", "teacher"});
-        for (int i = 0; i < 10; i++) {
+        client.newConnect(true, "127.0.0.1", 7100, "mycli=123");
+        Map<String, ColumnType> cmap = new HashMap<>();
+        cmap.put("classroom", ColumnType.STRING);
+        cmap.put("teacher", ColumnType.BINARY);
+        cmap.put("level", ColumnType.INT16);
+        cmap.put("number", ColumnType.INT64);
+        client.createTable("school", cmap, new String[]{"classroom", "level"});
+        for (int i = 0; i < 5; i++) {
             Map<String, byte[]> m = new HashMap<>();
             m.put("classroom", ("class" + i).getBytes(StandardCharsets.UTF_8));
             m.put("teacher", ("teacher" + i).getBytes(StandardCharsets.UTF_8));
-            m.put("student", ("student" + i).getBytes(StandardCharsets.UTF_8));
+            m.put("level", ByteBuffer.allocate(Short.BYTES).order(ByteOrder.BIG_ENDIAN).putShort((short) (1 << 10)).array());
+            m.put("number", ByteBuffer.allocate(Long.BYTES).order(ByteOrder.BIG_ENDIAN).putLong(1L << 33).array());
             client.insert("school", m);
         }
-        System.out.println("selectId>>"+client.selectId("school"));
+
+        Map<String, byte[]> m = new HashMap<>();
+        m.put("classroom", ("class111").getBytes(StandardCharsets.UTF_8));
+        m.put("teacher", ("teacher111").getBytes(StandardCharsets.UTF_8));
+        m.put("level", ByteBuffer.allocate(Short.BYTES).order(ByteOrder.BIG_ENDIAN).putShort((short) (1 << 5)).array());
+        client.update("school", 1, m);
+
+        System.out.println("selectId>>" + client.selectId("school"));
         DataBean db = client.selectById("school", 1);
         System.out.println("id >> " + db.getId());
-        for (String k : db.getTBean().keySet()) {
-            System.out.println(k + " >> " + new String(db.getTBean().get(k).array(), StandardCharsets.UTF_8));
+        for (Map.Entry<String, ByteBuffer> me : db.getTBean().entrySet()) {
+            System.out.println(me.getKey() + " >> " + new String(me.getValue().array(), StandardCharsets.UTF_8));
         }
         List<byte[]> list = new ArrayList<>();
         list.add("teacher0".getBytes(StandardCharsets.UTF_8));
