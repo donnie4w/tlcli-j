@@ -25,7 +25,7 @@ public class TlcliClientDemo {
 
     public TlcliClientDemo() {
         client = new Client();
-        client.newConnect(true, "127.0.0.1", 7100, "mycli=123");
+        client.newConnect(false, "127.0.0.1", 7100, "mycli=123");
     }
 
     @Test
@@ -149,7 +149,7 @@ public class TlcliClientDemo {
 
     public static void main(String[] args) throws Exception {
         Client client = new Client();
-        client.newConnect(true, "127.0.0.1", 7100, "mycli=123");
+        client.newConnect(false, "127.0.0.1", 7100, "mycli=123");
         Map<String, ColumnType> cmap = new HashMap<>();
         cmap.put("classroom", ColumnType.STRING);
         cmap.put("teacher", ColumnType.BINARY);
