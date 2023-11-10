@@ -255,6 +255,35 @@ public class Client {
         }
     }
 
+    public synchronized AckBean deleteBatch(String tableName, long ...ids) throws TlException {
+        try {
+            List<Long> list = new ArrayList<>();
+            for (long id:ids){
+                list.add(id);
+            }
+            return this.conn.DeleteBatch(tableName,list);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
+    }
+
+    public synchronized List<DataBean> selectByIdxDescLimit(String name, String column, byte[] value, long startId, long limit) throws TlException {
+        try {
+            return this.conn.SelectByIdxDescLimit(name, column, ByteBuffer.wrap(value),startId,limit);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
+    }
+
+    public synchronized List<DataBean> selectByIdxAscLimit(String name, String column, byte[] value, long startId, long limit) throws TlException {
+        try {
+            return this.conn.SelectByIdxAscLimit(name, column, ByteBuffer.wrap(value),startId,limit);
+        } catch (TException e) {
+            throw new TlException(e);
+        }
+    }
+
+
     public synchronized TableBean showTable(String name) throws TlException {
         try {
             return this.conn.ShowTable(name);
